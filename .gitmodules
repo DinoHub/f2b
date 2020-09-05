@@ -1,0 +1,3 @@
+[submodule "det2"]
+	path = det2
+	url = git@github.com:levan92/det2.git
