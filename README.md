@@ -10,6 +10,10 @@ If you just stuff a 4K image into a detector:
 After f2b:
 ![f2bed](illustrations/seoul-station_4K_det_maxinfsize1333.jpg)
 
+## How to run
+
+See `run.py` for example. Initialise, `register`, `detect`.
+
 ## Arguments
 
 - `detect_fn` (`function_or_method`): object detection inference function
