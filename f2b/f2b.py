@@ -2,24 +2,34 @@
 import numpy as np
 
 class F2B:
-    def __init__ (self, detect_fn=None, inference_width=None, inference_AR=None, inference_height=None, alpha=None, beta=None, pad=False):
+    def __init__ (self, detect_fn=None, max_inference_width=None, max_inference_height=None, overlapx=None, overlapy=None, overlapx_px=None, overlapy_px=None, pad=False):
         self.detect_fn = detect_fn
-        self.inference_width = inference_width or 1920
-        self.inference_AR = inference_AR 
-        self.inference_height = inference_height
-        if self.inference_height is None and self.inference_AR: 
-            self.inference_height = int(self.inference_width / self.inference_AR)
-        else:
-            self.inference_height = 1080
-        if self.inference_width <= 0 or self.inference_height <= 0:
+        self.max_inference_width = max_inference_width if max_inference_width is not None else 1920
+        # self.inference_AR = inference_AR 
+        self.max_inference_height = max_inference_height if max_inference_height is not None else 1080
+        # if self.max_inference_height is None and self.inference_AR: 
+            # self.max_inference_height = int(self.max_inference_width / self.inference_AR)
+        # else:
+            # self.max_inference_height = 1080
+        if self.max_inference_width <= 0 or self.max_inference_height <= 0:
             self.noslice = True
+            print('Not slicing! Frame not big?')
         else:
             self.noslice = False
-            print('Inference size (WxH): {}x{}'.format(self.inference_width, self.inference_height))
-        self.alpha = alpha or 0.2 # Overlap ratio for width
-        self.beta = beta or 0.2 # Overlap ratio for height
-        self.alpha_px = self.inference_width * self.alpha # in px
-        self.beta_px = self.inference_width * self.beta # in px
+            print('Inference size (WxH): {}x{}'.format(self.max_inference_width, self.max_inference_height))
+
+        if overlapx_px is None:
+            self.overlapx = overlapx if overlapx is not None else 0.2 # Overlap ratio for width
+            self.overlapx_px = self.max_inference_width * self.overlapx # in px
+        else:
+            self.overlapx_px = overlapx_px
+
+        if overlapy_px is None:
+            self.overlapy = overlapy if overlapy is not None else 0.2 # Overlap ratio for height
+            self.overlapy_px = self.max_inference_width * self.overlapy # in px
+        else:
+            self.overlapy_px = overlapy_px
+        
         self.rgb_means = [123.68, 116.779, 103.939] #imagenet
         self.pad = pad
 
@@ -27,35 +37,35 @@ class F2B:
         '''
         big_frame_shape: np-array like, [ h, w ]
         '''
+        self.big_frame_h, self.big_frame_w = big_frame_shape
+        print('Registered: Image {}x{} '.format(self.big_frame_w, self.big_frame_h) )
         if self.noslice:
             return 1
         else:
-            self.big_frame_h, self.big_frame_w = big_frame_shape
-            print('Registered: Image {}x{} '.format(self.big_frame_w, self.big_frame_h) )
-            print('Overlap(w,h): ', self.alpha_px, self.beta_px)
-            step_w = self.inference_width - self.alpha_px
-            step_h = self.inference_height - self.beta_px
+            print('Overlap(w,h): ', self.overlapx_px, self.overlapy_px)
+            step_w = self.max_inference_width - self.overlapx_px
+            step_h = self.max_inference_height - self.overlapy_px
             self.steps = [step_w, step_h]
-            num_ws = int( 1 + np.ceil((self.big_frame_w-self.inference_width)/step_w) )
-            num_hs = int( 1 + np.ceil((self.big_frame_h-self.inference_height)/step_h) )
+            num_ws = int( 1 + np.ceil((self.big_frame_w-self.max_inference_width)/step_w) )
+            num_hs = int( 1 + np.ceil((self.big_frame_h-self.max_inference_height)/step_h) )
             self.num_smols = [num_ws, num_hs]
             return num_ws * num_hs
 
     def need_pad(self, h, w):
-        if self.pad and (h < self.inference_height or w < self.inference_width):
+        if self.pad and (h < self.max_inference_height or w < self.max_inference_width):
             return True
         else:
-            # assert h == self.inference_height and w == self.inference_width
+            # assert h == self.max_inference_height and w == self.max_inference_width
             return False
 
     def pad_smol(self, smol):
         h, w = smol.shape[:2]
         if self.need_pad(h,w):
-            bpad = self.inference_height - h
-            rpad = self.inference_width - w
+            bpad = self.max_inference_height - h
+            rpad = self.max_inference_width - w
             # numpy pad
             # tic = time.time()
-            new_smol = np.zeros((self.inference_height, self.inference_width, 3), dtype='uint8')
+            new_smol = np.zeros((self.max_inference_height, self.max_inference_width, 3), dtype='uint8')
             for i, mean in enumerate(self.rgb_means):
                 new_smol[:,:,i] = np.pad(smol[:,:,i], [[0, bpad],[0,rpad]], mode='constant', constant_values=mean)
             # toc = time.time()
@@ -78,8 +88,8 @@ class F2B:
     
     # def pad_big(self, big_frame):
     #     h, w = big_frame.shape[:2]
-    #     new_big_frame_w = int ((self.num_smols[0] - 1) * self.steps[0] + self.inference_width)
-    #     new_big_frame_h = int((self.num_smols[1] - 1) * self.steps[1] + self.inference_height)
+    #     new_big_frame_w = int ((self.num_smols[0] - 1) * self.steps[0] + self.max_inference_width)
+    #     new_big_frame_h = int((self.num_smols[1] - 1) * self.steps[1] + self.max_inference_height)
     #     rpad =  new_big_frame_w - w
     #     bpad =  new_big_frame_h - h
 
@@ -111,7 +121,7 @@ class F2B:
                    )
     def get_end_w(self, i):
         return min( self.big_frame_w,
-                    int(self.get_start_w(i)+self.inference_width)
+                    int(self.get_start_w(i)+self.max_inference_width)
                    )
     def get_start_h(self, i):
         return max( 0, 
@@ -119,7 +129,7 @@ class F2B:
                    )
     def get_end_h(self, i):
         return min( self.big_frame_h, 
-                    int(self.get_start_h(i)+self.inference_height)
+                    int(self.get_start_h(i)+self.max_inference_height)
                    )
 
     def slice_n_dice(self, big_frame):
@@ -149,29 +159,54 @@ class F2B:
         smol_indices = []
         # Converting all detections to global coordinate
         for i, res in enumerate(od_results):
-            il,it, ir, ib = smol_coords[i]
-            iw = ir - il + 1
-            ih = ib - it + 1
-            scale_x = iw / self.inference_width
-            scale_y = ih / self.inference_height
+            # il,it, ir, ib = smol_coords[i]
+            il,it = smol_coords[i][:2]
+            # iw = ir - il + 1
+            # ih = ib - it + 1
+            # scale_x = iw / self.max_inference_width
+            # scale_x = 1
+            # scale_y = ih / self.max_inference_height
+            # scale_y = 1
             for det in res:
-                l,t,w,h = det[0]
-                l = l * scale_x + il
-                t = t * scale_y + it
-                w = w * scale_x
-                h = h * scale_y
-                new_det = [ l, t, w, h ]
+                # l,t,w,h = det[0]
+                l,t,r,b = det[0]
+                # l = l * scale_x + il
+                # t = t * scale_y + it
+                # w = w * scale_x
+                # h = h * scale_y
+                l = l + il
+                t = t + it
+                r = r + il
+                b = b + it
+                # new_det = [ l, t, w, h ]
+                new_det = [ l, t, r, b ]
                 flatten_dets.append((new_det, det[1], det[2]))
                 smol_indices.append(i)
         return flatten_dets, smol_indices
 
-    def detect(self, big_frame, **kwargs):
+
+    def detect(self, big_frame,  **kwargs):
         if self.noslice:
-            return self.detect_fn(big_frame, **kwargs)
+            res = self.detect_fn(big_frame, **kwargs)
+            return res, [0 for _ in res], [( 0,0, self.big_frame_w-1, self.big_frame_w-1 )]
         else:
             smol_frames, smol_coords = self.slice_n_dice(big_frame)
-            od_results = self.detect_fn(smol_frames, **kwargs)
-            # od_results = self.post_proc(od_results)
+            # box_format NEEDS to be in ltrb for f2b to process correctly, deconflicting_union assumes that. if your detect_fn does not have this argument, please make the necessary changes.
+            od_results = self.detect_fn(smol_frames, box_format='ltrb', **kwargs)
+
+            # select = -2
+            # import cv2
+            # last_smol = smol_frames[select].copy()
+            # last_res = od_results[select]
+            # for res in last_res:
+            #     l,t,w,h = res[0]
+            #     r = l + w - 1
+            #     b = t + h - 1
+            #     print(res)
+            #     cv2.rectangle(last_smol, (l,t), (r,b), (255,0,0), 2)
+            # cv2.imshow('last', last_smol)
+            # cv2.waitKey(0)
+
             flatten_dets, smol_indices = self.deconflicting_union(od_results, smol_coords)
             return flatten_dets, smol_indices, smol_coords
 
@@ -185,8 +220,8 @@ class F2B:
     #             il,it, ir, ib = smol_coords[i]
     #             iw = ir - il + 1
     #             ih = ib - it + 1
-    #             scale_x = iw / self.inference_width
-    #             scale_y = ih / self.inference_height
+    #             scale_x = iw / self.max_inference_width
+    #             scale_y = ih / self.max_inference_height
     #             frame_show = frame.copy()
     #             for det in od_results:
     #                 l,t,w,h = det[0]
@@ -203,11 +238,11 @@ class F2B:
 
 # if __name__ == '__main__':
 #     # import cv2
-#     # f2b = F2B(inference_width=5, inference_height=5)
-#     # f2b = F2B(inference_width=1920, inference_height=1080, pad=True)
-#     # f2b = F2B(inference_width=1920, inference_height=1080)
-#     # f2b = F2B(inference_width=1920, inference_AR=16/9)
-#     # f2b = F2B(inference_width=1280, inference_height=720)
+#     # f2b = F2B(max_inference_width=5, max_inference_height=5)
+#     # f2b = F2B(max_inference_width=1920, max_inference_height=1080, pad=True)
+#     # f2b = F2B(max_inference_width=1920, max_inference_height=1080)
+#     # f2b = F2B(max_inference_width=1920, inference_AR=16/9)
+#     # f2b = F2B(max_inference_width=1280, max_inference_height=720)
 #     # biggie = np.random.rand(13,13,3) #height, width, channel
 #     # biggie = cv2.imread('/media/dh/HDD/4K_sea_scenes/DJI_0044_4K_SEA_decoded/DJI_0044_4K_SEA_frame0186.jpg')
   
@@ -247,10 +282,10 @@ class F2B:
 #     # res=od.detect_get_box_in([biggie, biggie], box_format='ltwh', classes=['ship'], buffer_ratio=0.0)
 #     # print(res)
 
-#     # f2b = F2B(inference_width=-1, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=True)
-#     # f2b = F2B(inference_width=1920, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=True)
-#     f2b = F2B(inference_width=od.input_image_size[1], inference_height=od.input_image_size[0], detect_fn=od.detect_get_box_in, pad=False)
-#     # f2b = F2B(inference_width=1920, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=False)
+#     # f2b = F2B(max_inference_width=-1, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=True)
+#     # f2b = F2B(max_inference_width=1920, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=True)
+#     f2b = F2B(max_inference_width=od.input_image_size[1], max_inference_height=od.input_image_size[0], detect_fn=od.detect_get_box_in, pad=False)
+#     # f2b = F2B(max_inference_width=1920, inference_AR=16/9, detect_fn=od.detect_get_box_in, pad=False)
 #     num_smols = f2b.register(biggie.shape[:2]) 
 #     # od.regenerate(num_smols)
 #     # f2b.detect2(biggie, box_format='ltwh', classes=['ship'], buffer_ratio=0.0)
