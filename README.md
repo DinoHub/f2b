@@ -13,8 +13,8 @@ After f2b:
 ## Arguments
 
 - `detect_fn` (`function_or_method`): object detection inference function
-- `max_inference_width` and `max_inference_height` (`int`): usually the size your detector will shrink ur oversized image to
-- `overlapx_px` and `overlapy_px` (`int`): overlapping regions
+- `max_inference_width` and `max_inference_height` (`int`): usually the size your detector will shrink ur oversized image to, in pixels
+- `overlapx_px` and `overlapy_px` (`int`): overlapping regions, in pixels
 - `pad` (`bool`): if we add pad to orphan slices, probably don't pad for faster rcnn
 
 ## WIP
