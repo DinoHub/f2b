@@ -4,11 +4,24 @@
 
 So we slice and dice, infer, then merge them back.
 
+### Before f2b
+
 If you just stuff a 4K image into a detector:
 ![noslice](illustrations/seoul-station_4K_det_noslice.jpg)
 
-After f2b:
+### After f2b
+
+Just **purely slice, dice and infer**
 ![f2bed](illustrations/seoul-station_4K_det_maxinfsize1333.jpg)
+
+After **deconflicting union** (at the overlapping regions)
+![f2bed_dcu](illustrations/seoul-station_4K_det_DCU80.jpg)
+
+**Final results!**
+![f2bed_dcu_nosmol](illustrations/seoul-station_4K_det_DCU80_nosmol.jpg)
+
+Just for comparison, here's the **no**-f2b version again..
+![noslice2](illustrations/seoul-station_4K_det_noslice.jpg)
 
 ## How to run
 
