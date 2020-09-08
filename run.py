@@ -36,7 +36,7 @@ f2b = F2B(
         overlapy_px = 200,
         pad=False,
         dcu=True,
-        merge_thresh=0.85
+        merge_thresh=0.80
         )
 
 num_smols = f2b.register(biggie.shape[:2]) 
@@ -46,13 +46,20 @@ flatten_dets, smol_indices = f2b.detect(biggie, classes=None, buffer_ratio=0.0)
 biggie_show = biggie.copy()
 draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
 
+biggie_nosmol = biggie.copy()
+draw.draw_dets(biggie_nosmol, flatten_dets)
+
 show_win_name = 'biggie'
 cv2.namedWindow(show_win_name, cv2.WINDOW_NORMAL)
 cv2.imshow(show_win_name, biggie_show)
 
 
 input_path = Path(input_image)
+
 out_path = Path('illustrations') / f'{input_path.stem}_det.jpg'
 cv2.imwrite(str(out_path), biggie_show)
+
+out_path_nosmol = Path('illustrations') / f'{input_path.stem}_det_nosmol.jpg'
+cv2.imwrite(str(out_path_nosmol), biggie_nosmol)
 
 cv2.waitKey(0)

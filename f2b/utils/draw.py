@@ -39,3 +39,25 @@ def draw_biggie(frameDC, bbs, smol_coords, smol_indices):
                     text, 
                     (l+5, b-10),
                     font, fontScale, color, fontThickness)
+
+
+def draw_dets(frameDC, bbs):
+    if bbs is None or len(bbs) == 0:
+        return
+
+    font = cv2.FONT_HERSHEY_DUPLEX
+    fontScale = 1.2
+    fontThickness = 2
+
+    color = (255,255,0)
+    
+    for i, bb in enumerate(bbs):
+        if bb is None:
+            continue
+        l,t,r,b = [ int(x) for x in bb[0]]
+        text = f'{bb[2]}:{bb[1]*100:0.0f}%'
+        cv2.rectangle(frameDC, (l,t), (r,b), color, 2)
+        cv2.putText(frameDC, 
+                    text, 
+                    (l+5, b-10),
+                    font, fontScale, color, fontThickness)
