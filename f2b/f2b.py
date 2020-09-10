@@ -364,7 +364,9 @@ class F2B:
             smol_frames = self.slice_n_dice(big_frame)
             # smol_frames, smol_coords = self.slice_n_dice(big_frame)
             # box_format NEEDS to be in ltrb for f2b to process correctly, deconflicting_union assumes that. if your detect_fn does not have this argument, please make the necessary changes.
-            od_results = self.detect_fn(smol_frames, box_format='ltrb', **kwargs)
-
-            flatten_dets, smol_indices = self.deconflicting_union(od_results)
-            return flatten_dets, smol_indices
+            if len(smol_frames) > 0:
+                od_results = self.detect_fn(smol_frames, box_format='ltrb', **kwargs)
+                flatten_dets, smol_indices = self.deconflicting_union(od_results)
+                return flatten_dets, smol_indices
+            else:        
+                return None, None
