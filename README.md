@@ -34,6 +34,3 @@ See `run.py` for example. Initialise, `register`, `detect`.
 - `overlapx_px` and `overlapy_px` (`int`): overlapping regions, in pixels
 - `pad` (`bool`): if we add pad to orphan slices, probably don't pad for faster rcnn
 
-## WIP
-
-DCU aka deconflicting unions aka how to merge output boxes at overlapping slices.
