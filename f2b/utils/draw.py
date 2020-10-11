@@ -61,3 +61,16 @@ def draw_dets(frameDC, bbs):
                     text, 
                     (l+5, b-10),
                     font, fontScale, color, fontThickness)
+
+def draw_smol(frameDC, smol_coords):
+    font = cv2.FONT_HERSHEY_DUPLEX
+    fontScale = 1.2
+    fontThickness = 2
+
+    colors = [ tuple( [c*255 for c in colorsys.hsv_to_rgb(h,1,1)] )
+                    for h in np.linspace(0, 1, num=len(smol_coords)) ]
+
+    for i, coords in enumerate(smol_coords):
+        l,t,r,b = coords
+        cv2.rectangle(frameDC, (l,t), (r,b), colors[i], 4)
+        # print(l,t,r,b)
