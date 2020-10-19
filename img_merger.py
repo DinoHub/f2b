@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from f2b import F2B, draw
-from coco_utils import baseline_info, f2b_to_coco
+from cvat_utils.coco_utils import baseline_info, f2b_to_coco
 
 
 parser = argparse.ArgumentParser()
