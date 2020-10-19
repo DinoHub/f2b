@@ -5,11 +5,13 @@ import cv2
 import numpy as np
 
 font = cv2.FONT_HERSHEY_DUPLEX
+
 fontScale = 1.2
 fontThickness = 2
 boxThickness = 2
 
 # fontScale = 0.75
+# fontScale = 1.0
 # fontThickness = 1
 # boxThickness = 1
 
@@ -27,6 +29,7 @@ def draw_biggie(frameDC, bbs, smol_coords, smol_indices, conf_thresh=None):
 
     colors = [ tuple( [c*255 for c in colorsys.hsv_to_rgb(h,1,1)] ) 
                     for h in np.linspace(0, 1, num=len(smol_coords)+1) ]
+                    # for h in np.linspace(0, 1, num=len(smol_coords)) ]
     # colors = [ tuple([c*255 for c in color ]) for color in colors ]
     # colors = [ (random.randint(0,255), random.randint(0,255), random.randint(0,255)) for _ in range(len(smol_coords)) ]
 
