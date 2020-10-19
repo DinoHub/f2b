@@ -51,6 +51,7 @@ class F2B:
         self.pad = pad
         self.do_dcu = dcu
         self.merge_thresh = merge_thresh
+        self.registered = False
 
     def get_start_x(self, i):
         return max( 0, 
@@ -103,6 +104,7 @@ class F2B:
         '''
         self.big_frame_h, self.big_frame_w = big_frame_shape
         print('Registered: Image {}x{} '.format(self.big_frame_w, self.big_frame_h) )
+        self.registered = True
         if self.noslice:
             self.smol_coords = [( 0,0, self.big_frame_w-1, self.big_frame_w-1 )]
             return 1
@@ -155,7 +157,7 @@ class F2B:
                     overlap_items['b'] = [ self.slice2overlaps[bot_idx]['t'][0], bot_idx ]
 
             num_smols = num_ws * num_hs
-            print('Num of smols: {}'.format(num_smols))
+            # print('Num of smols: {}'.format(num_smols))
             return num_smols
 
     def need_pad(self, h, w):
