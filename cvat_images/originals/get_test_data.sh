@@ -8,4 +8,4 @@ if ! type "gdown" > /dev/null; then
 fi
 
 # Downloads with gdown
-gdown -O cvat_annot_coco.json https://drive.google.com/uc?id=1KU8qH39kdZ8PLdRMvU0QkIQCEskm8HSH
+gdown -O cvat_annot_coco.json https://drive.google.com/uc?id=1GBjudGNBPT2nuqYHAXfcGZFAuPYm41Pu
