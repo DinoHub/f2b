@@ -349,6 +349,9 @@ class F2B:
         flatten_dets = [ det for slice_idx, slice_dets in enumerate(od_results_global)
                              for in_slice_idx, det in enumerate(slice_dets) 
                              if (slice_idx, in_slice_idx) not in merged_dict   ]
+        smol_indices = [ slice_idx for slice_idx, slice_dets in enumerate(od_results_global)
+                             for in_slice_idx, det in enumerate(slice_dets)
+                             if (slice_idx, in_slice_idx) not in merged_dict   ]
 
         return flatten_dets, smol_indices
 
