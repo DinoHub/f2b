@@ -294,7 +294,7 @@ class F2B:
 
         # Merge dem overlaps
 
-        merged_dict = {}
+        self.merged_dict = {}
         ## horizontally first
         # pprint(dets_tuples_in_overlaps_x)
         for slice_idxes, class_dict in dets_tuples_in_overlaps_x.items():
@@ -313,7 +313,7 @@ class F2B:
                         detB = od_results_global[sliceB][global_idxB]
                         od_results_global[sliceA][global_idxA] = merge(detA, detB)
 
-                        merged_dict[(sliceB,global_idxB)] = (sliceA, global_idxA)
+                        self.merged_dict[(sliceB,global_idxB)] = (sliceA, global_idxA)
 
         ## then vertically
         # pprint(dets_tuples_in_overlaps_y)
@@ -330,14 +330,14 @@ class F2B:
                         global_idxA = slice2intersect_idxes[sliceA]['b'][cl][idxA]
                         global_idxB = slice2intersect_idxes[sliceB]['t'][cl][idxB]
 
-                        if (sliceA, global_idxA) in merged_dict:
-                            sliceA_resolved, global_idxA_resolved = merged_dict[(sliceA, global_idxA)]
+                        if (sliceA, global_idxA) in self.merged_dict:
+                            sliceA_resolved, global_idxA_resolved = self.merged_dict[(sliceA, global_idxA)]
                         else:
                             sliceA_resolved, global_idxA_resolved = sliceA, global_idxA
                         detA = od_results_global[sliceA_resolved][global_idxA_resolved]
 
-                        if (sliceB, global_idxB) in merged_dict:
-                            sliceB_resolved, global_idxB_resolved = merged_dict[(sliceB, global_idxB)]
+                        if (sliceB, global_idxB) in self.merged_dict:
+                            sliceB_resolved, global_idxB_resolved = self.merged_dict[(sliceB, global_idxB)]
                         else:
                             sliceB_resolved, global_idxB_resolved = sliceB, global_idxB
                         detB = od_results_global[sliceB_resolved][global_idxB_resolved]
@@ -345,15 +345,15 @@ class F2B:
                         od_results_global[sliceA_resolved][global_idxA_resolved] = merge(detA, detB)
 
                         # using sliceB instead of sliceB_resolved is correct. sliceB_resolved tuple already have a "pointer" to sliceA_resolved. Now we want to establish that this "new" sliceB should point to sliceA_resolved as well. 
-                        merged_dict[(sliceB,global_idxB)] = (sliceA_resolved, global_idxA_resolved)
+                        self.merged_dict[(sliceB,global_idxB)] = (sliceA_resolved, global_idxA_resolved)
 
 
         flatten_dets = [ det for slice_idx, slice_dets in enumerate(od_results_global)
                              for in_slice_idx, det in enumerate(slice_dets) 
-                             if (slice_idx, in_slice_idx) not in merged_dict   ]
+                             if (slice_idx, in_slice_idx) not in self.merged_dict   ]
         smol_indices = [ slice_idx for slice_idx, slice_dets in enumerate(od_results_global)
                              for in_slice_idx, det in enumerate(slice_dets)
-                             if (slice_idx, in_slice_idx) not in merged_dict   ]
+                             if (slice_idx, in_slice_idx) not in self.merged_dict   ]
 
         return flatten_dets, smol_indices
 

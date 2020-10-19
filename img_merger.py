@@ -37,6 +37,8 @@ for cat_dict in cvat_annots['categories']:
 
 biggie_images = []
 all_flatten_dets = []
+all_smallie_annots_coco = []
+all_merged = []
 for i, img_name in enumerate(f2b_data):
     # read original image and f2b settings
     f2b_settings = f2b_data[img_name]
@@ -60,6 +62,7 @@ for i, img_name in enumerate(f2b_data):
 
     # get all annotations of all smallies for the image
     img_annots = []
+    img_smallie_annots_coco = []
     for smallie_path in f2b_settings["smols"]:
         # find image_id for smallie
         smallie_name = Path(smallie_path).name
@@ -69,6 +72,7 @@ for i, img_name in enumerate(f2b_data):
             # get all annotations for smallie
             smallie_annots_coco = [element for element in cvat_annots['annotations'] if element['image_id'] == image_data['id']]
             # print(smallie_annots_coco)
+            img_smallie_annots_coco.append(smallie_annots_coco)
 
             smallie_annots_f2b = []
             # convert coco annotations into detect_get_box_in format
@@ -91,7 +95,10 @@ for i, img_name in enumerate(f2b_data):
             img_annots.append(smallie_annots_f2b)
         else:
             img_annots.append([])
+            img_smallie_annots_coco.append([])
+            print(f'annotations for {smallie_name} not found')
     # print(img_annots)
+    all_smallie_annots_coco.append(img_smallie_annots_coco)
 
     # map annotation results back to original image
     if num_smols > 0:
@@ -99,6 +106,7 @@ for i, img_name in enumerate(f2b_data):
     else:
         flatten_dets, smol_indices = None, None
     all_flatten_dets.append(flatten_dets)
+    all_merged.append(f2b.merged_dict)
 
     biggie_show = biggie.copy()
     draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
@@ -108,7 +116,8 @@ for i, img_name in enumerate(f2b_data):
 
 # create annotation json for biggies
 biggie_annots["images"] = biggie_images
-biggie_dets = f2b_to_coco(all_flatten_dets, cvat_annots['categories'])
+biggie_dets = f2b_to_coco(all_flatten_dets, cvat_annots['categories'], all_smallie_annots_coco, all_merged)
+
 biggie_annots["annotations"] = biggie_dets
 
 with open(str(biggie_annots_path), 'w+') as outfile:
