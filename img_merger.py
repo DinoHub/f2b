@@ -38,7 +38,7 @@ for cat_dict in cvat_annots['categories']:
 biggie_images = []
 all_flatten_dets = []
 all_smallie_annots_coco = []
-all_merged = []
+f2b_merged_dicts = []
 for i, img_name in enumerate(f2b_data):
     # read original image and f2b settings
     f2b_settings = f2b_data[img_name]
@@ -106,7 +106,7 @@ for i, img_name in enumerate(f2b_data):
     else:
         flatten_dets, smol_indices = None, None
     all_flatten_dets.append(flatten_dets)
-    all_merged.append(f2b.merged_dict)
+    f2b_merged_dicts.append(f2b.merged_dict)
 
     biggie_show = biggie.copy()
     draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
@@ -116,7 +116,7 @@ for i, img_name in enumerate(f2b_data):
 
 # create annotation json for biggies
 biggie_annots["images"] = biggie_images
-biggie_dets = f2b_to_coco(all_flatten_dets, cvat_annots['categories'], all_smallie_annots_coco, all_merged)
+biggie_dets = f2b_to_coco(all_flatten_dets, cvat_annots['categories'], all_smallie_annots_coco, f2b_merged_dicts)
 
 biggie_annots["annotations"] = biggie_dets
 

@@ -5,8 +5,8 @@ def baseline_info(cvat_annots):
     coco_annots["categories"] = cvat_annots["categories"]
     return coco_annots
 
-def f2b_to_coco(all_flatten_dets, categories, smallie_annots, merged_dict):
-    smallie_annots_filtered = filter_smallie_annots(smallie_annots, merged_dict)
+def f2b_to_coco(all_flatten_dets, categories, smallie_annots, f2b_merged_dicts):
+    smallie_annots_filtered = filter_smallie_annots(smallie_annots, f2b_merged_dicts)
 
     coco_dets = []
     total_annots = 0
@@ -37,7 +37,7 @@ def f2b_to_coco(all_flatten_dets, categories, smallie_annots, merged_dict):
 
     return coco_dets
 
-def filter_smallie_annots(smallie_annots, merged_dict):
+def filter_smallie_annots(smallie_annots, f2b_merged_dicts):
     starting_indices = []
     total_annots = 0
     smallie_annots_flatten = []
@@ -53,7 +53,7 @@ def filter_smallie_annots(smallie_annots, merged_dict):
     # print(f'num annots: {len(smallie_annots_flatten)}')
 
     merge_indices = []
-    for i, merged_img in enumerate(merged_dict):
+    for i, merged_img in enumerate(f2b_merged_dicts):
         for merged in merged_img:
             idx = starting_indices[i][merged[0]] + merged[1]
             merge_indices.append(idx)
