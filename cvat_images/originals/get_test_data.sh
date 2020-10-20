@@ -9,3 +9,4 @@ fi
 
 # Downloads with gdown
 gdown -O cvat_annot_coco.json https://drive.google.com/uc?id=1GBjudGNBPT2nuqYHAXfcGZFAuPYm41Pu
+gdown -O cvat_annot_xml.xml https://drive.google.com/uc?id=12sb3X9Fo66vLhpU0yq9nzKP6ccxFlFe6

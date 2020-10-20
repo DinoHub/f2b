@@ -1,41 +1,42 @@
-def baseline_info_coco(cvat_annots):
-    coco_annots = {}
-    coco_annots["licenses"] = cvat_annots["licenses"]
-    coco_annots["info"] = cvat_annots["info"]
-    coco_annots["categories"] = cvat_annots["categories"]
-    return coco_annots
+from bs4 import BeautifulSoup
 
-def f2b_to_coco(all_flatten_dets, categories, smallie_annots, f2b_merged_dicts):
+def baseline_info_xml(cvat_soup):
+    xml_root = "<annotations></annotations>"
+    xml_soup = BeautifulSoup(xml_root, 'xml')
+
+    xml_soup.annotations.append(cvat_soup.find("version"))
+    xml_soup.annotations.append(cvat_soup.find("meta"))
+
+    return xml_soup
+
+def f2b_to_xml(all_flatten_dets, smallie_annots, f2b_merged_dicts, xml_soup):
     smallie_annots_filtered = filter_smallie_annots(smallie_annots, f2b_merged_dicts)
 
-    coco_dets = []
     total_annots = 0
     for i, flatten_dets in enumerate(all_flatten_dets):
+        xml_img = xml_soup.find("image", {"id": i})
         for flatten_det in flatten_dets:
-            coco_det = {"image_id": i+1}
+            xml_info = smallie_annots_filtered[total_annots]
 
-            coco_info = smallie_annots_filtered[total_annots]
-            info = dict((key, coco_info[key]) for key in ['segmentation', 'iscrowd', 'attributes'] if key in coco_info)
-            coco_det.update(info)
+            xml_det = xml_soup.new_tag("box", occluded=xml_info.get("occluded"), source=xml_info.get("source"), z_order=xml_info.get("z_order"))
+
+            for attr in xml_info.find_all("attribute"):
+                xml_det.append(attr)
 
             ltrb, conf, bb_cls = flatten_det
+            l, t, r, b = ltrb
+
+            xml_det['label'] = bb_cls
+            xml_det['xtl'] = l
+            xml_det['ytl'] = t
+            xml_det['xbr'] = r
+            xml_det['ybr'] = b
+
+            xml_img.append(xml_det)
 
             total_annots += 1
-            coco_det["id"] = total_annots
 
-            cat_id = next((item for item in categories if item["name"] == bb_cls), None)['id']
-            coco_det["category_id"] = cat_id
-
-            l, t, r, b = ltrb
-            w = r - l
-            h = b - t
-            area = w * h
-            coco_det["bbox"] = [l, t, w, h]
-            coco_det["area"] = area
-
-            coco_dets.append(coco_det)
-
-    return coco_dets
+    return xml_soup
 
 def filter_smallie_annots(smallie_annots, f2b_merged_dicts):
     starting_indices = []
