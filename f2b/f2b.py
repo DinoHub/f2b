@@ -222,7 +222,8 @@ class F2B:
                 r = r + il
                 b = b + it
                 new_det = [ l, t, r, b ]
-                new_res = (new_det, det[1], det[2])
+                # new_res = (new_det, det[1], det[2])
+                new_res = (new_det,) + det[1:]
                 flatten_dets.append(new_res)
                 smol_indices.append(slice_idx)
                 slice_res_global.append(new_res)
