@@ -12,7 +12,7 @@ from cvat_utils.xml_utils import baseline_info_xml, f2b_to_xml
 parser = argparse.ArgumentParser()
 parser.add_argument('--f2b_file', help='path to file for f2b settings', default='cvat_images/originals/f2b_set.json', type=str)
 parser.add_argument('--cvat_annot_file', help='path to file for cvat annotations', default='cvat_images/originals/cvat_annot_coco.json', type=str)
-parser.add_argument('--biggie_annot_file', help='path to file for biggie annotations', default='cvat_images/originals/biggie_annot_coco.json', type=str)
+parser.add_argument('--biggie_annot_file', help='path to output file for biggie annotations', default='cvat_images/originals/biggie_annot_coco.json', type=str)
 parser.add_argument('--vis_extension', help='extension for visualized smallies and annotated image output', default='jpg', type=str)
 args = parser.parse_args()
 
