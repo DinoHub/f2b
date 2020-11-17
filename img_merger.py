@@ -3,6 +3,7 @@ import json
 import argparse
 from pathlib import Path
 from bs4 import BeautifulSoup
+from collections import defaultdict
 
 from f2b import F2B, draw
 from cvat_utils.coco_utils import baseline_info_coco, f2b_to_coco
@@ -52,13 +53,13 @@ if cvat_annots_path.suffix == '.json':
         f2b_settings = f2b_data[img_name]
 
         input_path = Path(f2b_settings["img_path"])
-        biggie = cv2.imread(str(input_path))
+        if input_path.exists():
+            biggie = cv2.imread(str(input_path))
+            viz = True
+        else:
+            viz = False
 
-        if biggie is None:
-            print(f'{input_path} does not exist')
-            continue
-
-        biggie_images.append({"id": i+1, "width": biggie.shape[1], "height": biggie.shape[0], "file_name": img_name, "license": 0})
+        biggie_images.append({"id": i+1, "width": f2b_settings["img_width"], "height": f2b_settings["img_height"], "file_name": img_name, "license": 0})
 
         f2b = F2B(
             max_inference_width = f2b_settings['max_inference_width'],
@@ -66,7 +67,19 @@ if cvat_annots_path.suffix == '.json':
             overlapx_px = f2b_settings['overlapx_px'],
             overlapy_px = f2b_settings['overlapy_px'],
             )
-        num_smols = f2b.register(biggie.shape[:2])
+        num_smols = f2b.register([f2b_settings["img_height"], f2b_settings["img_width"]])
+
+        img2id = {}
+        # iterate through json file and extract image_id for all images
+        for image in cvat_annots['images']:
+            img2id[image["file_name"]] = image["id"]
+        # print(f'img2id: {img2id}')
+
+        # iterate through json file and extract annotations for all images
+        id2annot = defaultdict(list)
+        for annot in cvat_annots['annotations']:
+            id2annot[annot["image_id"]].append(annot)
+        # print(f'id2annot: {id2annot}')
 
         # get all annotations of all smallies for the image
         img_annots = []
@@ -74,11 +87,10 @@ if cvat_annots_path.suffix == '.json':
         for smallie_path in f2b_settings["smols"]:
             # find image_id for smallie
             smallie_name = Path(smallie_path).name
-            image_data = next((item for item in cvat_annots['images'] if item["file_name"] == smallie_name), None)
 
-            if image_data is not None:
+            if smallie_name in img2id:
                 # get all annotations for smallie
-                smallie_annots_coco = [element for element in cvat_annots['annotations'] if element['image_id'] == image_data['id']]
+                smallie_annots_coco = id2annot[img2id[smallie_name]]
                 # print(smallie_annots_coco)
                 img_smallie_annots_coco.append(smallie_annots_coco)
 
@@ -95,10 +107,10 @@ if cvat_annots_path.suffix == '.json':
                     smallie_annots_f2b.append(smallie_annot_f2b)
 
                 # sanity check
-                smol = cv2.imread(str(smallie_path)).copy()
-                draw.draw_dets(smol, smallie_annots_f2b)
-                out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
-                cv2.imwrite(str(out_path), smol)
+                # smol = cv2.imread(str(smallie_path)).copy()
+                # draw.draw_dets(smol, smallie_annots_f2b)
+                # out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
+                # cv2.imwrite(str(out_path), smol)
 
                 img_annots.append(smallie_annots_f2b)
             else:
@@ -116,11 +128,12 @@ if cvat_annots_path.suffix == '.json':
         all_flatten_dets.append(flatten_dets)
         f2b_merged_dicts.append(f2b.merged_dict)
 
-        biggie_show = biggie.copy()
-        draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
+        if viz:
+            biggie_show = biggie.copy()
+            draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
 
-        out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
-        cv2.imwrite(str(out_path), biggie_show)
+            out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
+            cv2.imwrite(str(out_path), biggie_show)
 
     # create annotation json for biggies
     biggie_annots["images"] = biggie_images
@@ -148,13 +161,13 @@ elif cvat_annots_path.suffix == '.xml':
         f2b_settings = f2b_data[img_name]
 
         input_path = Path(f2b_settings["img_path"])
-        biggie = cv2.imread(str(input_path))
+        if input_path.exists():
+            biggie = cv2.imread(str(input_path))
+            viz = True
+        else:
+            viz = False
 
-        if biggie is None:
-            print(f'{input_path} does not exist')
-            continue
-
-        xml_img = xml_soup.new_tag("image", id=i, width=biggie.shape[1], height=biggie.shape[0])
+        xml_img = xml_soup.new_tag("image", id=i, width=f2b_settings["img_width"], height=f2b_settings["img_height"])
         xml_img['name'] = img_name
         xml_soup.annotations.append(xml_img)
 
@@ -164,7 +177,7 @@ elif cvat_annots_path.suffix == '.xml':
             overlapx_px = f2b_settings['overlapx_px'],
             overlapy_px = f2b_settings['overlapy_px'],
             )
-        num_smols = f2b.register(biggie.shape[:2])
+        num_smols = f2b.register([f2b_settings["img_height"], f2b_settings["img_width"]])
 
         # get all annotations of all smallies for the image
         img_annots = []
@@ -195,10 +208,10 @@ elif cvat_annots_path.suffix == '.xml':
                 # print(smallie_annots_f2b)
 
                 # sanity check
-                smol = cv2.imread(str(smallie_path)).copy()
-                draw.draw_dets(smol, smallie_annots_f2b)
-                out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
-                cv2.imwrite(str(out_path), smol)
+                # smol = cv2.imread(str(smallie_path)).copy()
+                # draw.draw_dets(smol, smallie_annots_f2b)
+                # out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
+                # cv2.imwrite(str(out_path), smol)
 
                 img_annots.append(smallie_annots_f2b)
             else:
@@ -216,11 +229,12 @@ elif cvat_annots_path.suffix == '.xml':
         all_flatten_dets.append(flatten_dets)
         f2b_merged_dicts.append(f2b.merged_dict)
 
-        biggie_show = biggie.copy()
-        draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
+        if viz:
+            biggie_show = biggie.copy()
+            draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
 
-        out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
-        cv2.imwrite(str(out_path), biggie_show)
+            out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
+            cv2.imwrite(str(out_path), biggie_show)
 
     # create annotation xml for biggies
     xml_soup = f2b_to_xml(all_flatten_dets, all_smallie_annots_xml, f2b_merged_dicts, xml_soup)

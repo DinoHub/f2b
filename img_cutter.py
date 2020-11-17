@@ -36,7 +36,7 @@ max_inference_height = args.f2b_height
 overlapx_px = args.f2b_x
 overlapy_px = args.f2b_y
 
-img_data = {input_path.name: {'max_inference_width': max_inference_width, 'max_inference_height': max_inference_height, 'overlapx_px': overlapx_px, 'overlapy_px': overlapy_px, 'img_path': str(out_path)}}
+img_data = {input_path.name: {'max_inference_width': max_inference_width, 'max_inference_height': max_inference_height, 'overlapx_px': overlapx_px, 'overlapy_px': overlapy_px, 'img_path': str(out_path), 'img_width': biggie.shape[1], 'img_height': biggie.shape[0]}}
 
 f2b = F2B(
         max_inference_width = max_inference_width,
