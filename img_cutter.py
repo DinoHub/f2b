@@ -27,7 +27,9 @@ out_dir = Path(args.out_dir)
 Path.mkdir(out_dir, exist_ok=True)
 
 # save original image
-out_path = out_dir / 'originals' / f'{input_path.name}'
+orig_dir = out_dir / 'originals'
+orig_dir.mkdir(parents=True, exist_ok=True)
+out_path = orig_dir / f'{input_path.name}'
 cv2.imwrite(str(out_path), biggie)
 
 # f2b settings
@@ -51,7 +53,9 @@ smol_frames = f2b.slice_n_dice(biggie)
 
 biggie_show = biggie.copy()
 draw.draw_smol(biggie_show, f2b.smol_coords)
-out_path = out_dir / 'originals' / 'smol_annots' / f'{input_path.stem}_smols.png'
+orig_smol_dir = orig_dir / 'smol_lines'
+orig_smol_dir.mkdir(parents=True, exist_ok=True)
+out_path = orig_smol_dir / f'{input_path.stem}_smols.png'
 cv2.imwrite(str(out_path), biggie_show)
 
 smol_paths = []
