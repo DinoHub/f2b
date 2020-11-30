@@ -25,8 +25,8 @@ with open(str(f2b_filepath)) as json_file:
 
 biggie_annots_path = Path(args.biggie_annot_file)
 
-smol_annots_dir = f2b_filepath.parent / 'smol_annots'
-Path.mkdir(smol_annots_dir, exist_ok=True)
+merged_annots_dir = f2b_filepath.parent / 'merged_annots'
+Path.mkdir(merged_annots_dir, exist_ok=True)
 
 cvat_annots_path = Path(args.cvat_annot_file)
 assert cvat_annots_path.is_file(), 'img data file doesnt exist'
@@ -111,7 +111,7 @@ if cvat_annots_path.suffix == '.json':
                 # sanity check
                 # smol = cv2.imread(str(smallie_path)).copy()
                 # draw.draw_dets(smol, smallie_annots_f2b)
-                # out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
+                # out_path = merged_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
                 # cv2.imwrite(str(out_path), smol)
 
                 img_annots.append(smallie_annots_f2b)
@@ -134,7 +134,7 @@ if cvat_annots_path.suffix == '.json':
             biggie_show = biggie.copy()
             draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
 
-            out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
+            out_path = merged_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
             cv2.imwrite(str(out_path), biggie_show)
 
     # create annotation json for biggies
@@ -212,7 +212,7 @@ elif cvat_annots_path.suffix == '.xml':
                 # sanity check
                 # smol = cv2.imread(str(smallie_path)).copy()
                 # draw.draw_dets(smol, smallie_annots_f2b)
-                # out_path = smol_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
+                # out_path = merged_annots_dir / f'{Path(smallie_path).stem}.{args.vis_extension}'
                 # cv2.imwrite(str(out_path), smol)
 
                 img_annots.append(smallie_annots_f2b)
@@ -235,7 +235,7 @@ elif cvat_annots_path.suffix == '.xml':
             biggie_show = biggie.copy()
             draw.draw_biggie(biggie_show, flatten_dets, f2b.smol_coords, smol_indices)
 
-            out_path = smol_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
+            out_path = merged_annots_dir / f'{input_path.stem}_annot.{args.vis_extension}'
             cv2.imwrite(str(out_path), biggie_show)
 
     # create annotation xml for biggies
