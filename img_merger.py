@@ -1,6 +1,7 @@
 import cv2
 import json
 import argparse
+import warnings
 from pathlib import Path
 from bs4 import BeautifulSoup
 from collections import defaultdict
@@ -58,6 +59,7 @@ if cvat_annots_path.suffix == '.json':
             viz = True
         else:
             viz = False
+            warnings.warn(f'Original big image not found at {input_path}, will not be visualising merged annotations.')
 
         biggie_images.append({"id": i+1, "width": f2b_settings["img_width"], "height": f2b_settings["img_height"], "file_name": img_name, "license": 0})
 
