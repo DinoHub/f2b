@@ -13,7 +13,7 @@ parser.add_argument('--f2b_width', help='f2b max_inference_width', default=1333,
 parser.add_argument('--f2b_height', help='f2b max_inference_height', default=1333, type=int)
 parser.add_argument('--f2b_x', help='f2b overlapx_px', default=100, type=int)
 parser.add_argument('--f2b_y', help='f2b overlapy_px', default=100, type=int)
-parser.add_argument('--out_f2b', help='path to output file for f2b settings', default='cvat_images/originals/f2b_set.json', type=str)
+parser.add_argument('--out_settings', help='path to output file for f2b settings', default='cvat_images/originals/f2b_set.json', type=str)
 parser.add_argument('--smol_extension', help='extension for smol image output', default='jpg', type=str)
 args = parser.parse_args()
 
@@ -61,7 +61,7 @@ for i, smallie in enumerate(smol_frames):
     cv2.imwrite(str(out_path), smallie)
 img_data[input_path.name]['smols'] = smol_paths
 
-json_path = Path(args.out_f2b)
+json_path = Path(args.out_settings)
 if json_path.is_file():
     with open(str(json_path)) as outfile:
         data = json.load(outfile)
