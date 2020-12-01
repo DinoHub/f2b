@@ -168,6 +168,7 @@ elif cvat_annots_path.suffix == '.xml':
             viz = True
         else:
             viz = False
+            warnings.warn(f'Original big image not found at {input_path}, will not be visualising merged annotations.')
 
         xml_img = xml_soup.new_tag("image", id=i, width=f2b_settings["img_width"], height=f2b_settings["img_height"])
         xml_img['name'] = img_name

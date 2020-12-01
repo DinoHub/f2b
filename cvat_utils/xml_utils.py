@@ -4,8 +4,11 @@ def baseline_info_xml(cvat_soup):
     xml_root = "<annotations></annotations>"
     xml_soup = BeautifulSoup(xml_root, 'xml')
 
-    xml_soup.annotations.append(cvat_soup.find("version"))
-    xml_soup.annotations.append(cvat_soup.find("meta"))
+    if cvat_soup.find("version"):
+        xml_soup.annotations.append(cvat_soup.find("version"))
+
+    if cvat_soup.find("meta"):
+        xml_soup.annotations.append(cvat_soup.find("meta"))
 
     return xml_soup
 
@@ -31,6 +34,9 @@ def f2b_to_xml(all_flatten_dets, smallie_annots, f2b_merged_dicts, xml_soup):
             xml_det['ytl'] = t
             xml_det['xbr'] = r
             xml_det['ybr'] = b
+
+            # remove empty attributes
+            xml_det.attrs = {k: v for k, v in xml_det.attrs.items() if v is not None}
 
             xml_img.append(xml_det)
 
