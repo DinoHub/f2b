@@ -34,3 +34,8 @@ See `run.py` for example. Initialise, `register`, `detect`.
 - `overlapx_px` and `overlapy_px` (`int`): overlapping regions, in pixels
 - `pad` (`bool`): if we add pad to orphan slices, probably don't pad for faster rcnn
 
+## How to use f2b for annotating huge images
+
+If images are too big to be fed into cvat for annotations, `img_cutter.py` comes to the rescue to cut up the images into more reasonable smaller images. Use `img_cutter_batch.sh` to run this on a batch of images in a directory. The cut-up images to be uploaded into cvat will be stored in your specified `out_dir`.
+
+After annotations are done on the cut-up images, use `img_merger.py` to merge back the annotations into specified `biggie_annot_file`. Both coco json and 'cvat for images' xml formats are currently supported.
